@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>条码扫描比对工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .language-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .lang-tab {
+            padding: 5px 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .lang-tab.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            font-weight: bold;
+        }
+        
+        .order-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #4caf50;
+            margin-bottom: 15px;
+        }
+        
+        .order-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .order-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            align-items: end;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .current-order {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #e8f4fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .operator-info {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #ffb300;
+            margin-bottom: 15px;
+        }
+        
+        .operator-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #1a73e8;
+            margin-bottom: 15px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .scan-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+        
+        .section-rule {
+            font-size: 12px;
+            background-color: #f8f9fa;
+            padding: 3px 8px;
+            border-radius: 10px;
+            color: #555;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .input-group input.manual {
+            background-color: #f9f9f9;
+        }
+        
+        .input-group input.scan {
+            background-color: #f0f7ff;
+        }
+        
+        .validation-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f0f7ff;
+            border-radius: 4px;
+        }
+        
+        .validation-option label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        .validation-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .validation-option select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .extracted-info {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .compare-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .compare-result.show {
+            display: block;
+        }
+        
+        .compare-result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .compare-result.failure {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-clear-all {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-simulate {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .btn-settings {
+            background-color: #6610f2;
+            color: white;
+        }
+        
+        .btn-records {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .panel-overlay.active {
+            display: block;
+        }
+        
+        .settings-panel, .records-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1001;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.active, .records-panel.active {
+            right: 0;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .panel-header h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+        
+        .panel-group {
+            margin-bottom: 20px;
+        }
+        
+        .panel-group h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .panel-item {
+            margin-bottom: 10px;
+        }
+        
+        .panel-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .panel-item input, .panel-item select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .panel-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-close-panel {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .records-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .record-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .no-records {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .operator-form, .order-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .settings-panel, .records-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="header-title-zh">条码扫描比对工具</h1>
+            <h1 id="header-title-vi" style="display:none;">Công cụ so sánh mã vạch</h1>
+            <p id="header-subtitle-zh">支持一维码和二维码明暗码比对</p>
+            <p id="header-subtitle-vi" style="display:none;">Hỗ trợ so sánh mã sáng và mã tối của mã vạch 1D và QR</p>
+            <div class="language-tabs">
+                <button class="lang-tab active" data-lang="zh">中文</button>
+                <button class="lang-tab" data-lang="vi">Tiếng Việt</button>
+            </div>
+        </header>
+        
+        <!-- 订单号区域 -->
+        <div class="order-info" id="order-info-zh">
+            <h3>订单信息</h3>
+            <div class="order-form">
+                <div class="form-group">
+                    <label for="order-number">订单号</label>
+                    <input type="text" id="order-number" placeholder="请输入订单号">
+                </div>
+                <div class="form-group">
+                    <label for="product-model">产品型号</label>
+                    <input type="text" id="product-model" placeholder="请输入产品型号">
+                </div>
+                <div class="form-group">
+                    <button id="save-order" class="btn-save" style="background-color:#28a745; color:white; height:36px;">
+                        保存订单信息
+                    </button>
+                </div>
+            </div>
+            <div class="current-order" id="current-order-display" style="display:none;">
+                <strong>当前订单：</strong><span id="current-order-text"></span>
+            </div>
+        </div>
+        
+        <div class="order-info" id="order-info-vi" style="display:none;">
+            <h3>Thông tin đơn hàng</h3>
+            <div class="order-form">
+                <div class="form-group">
+                    <label for="order-number-vi">Số đơn hàng</label>
+                    <input type="text" id="order-number-vi" placeholder="Nhập số đơn hàng">
+                </div>
+                <div class="form-group">
+                    <label for="product-model-vi">Model sản phẩm</label>
+                    <input type="text" id="product-model-vi" placeholder="Nhập model sản phẩm">
+                </div>
+                <div class="form-group">
+                    <button id="save-order-vi" class="btn-save" style="background-color:#28a745; color:white; height:36px;">
+                        Lưu thông tin đơn hàng
+                    </button>
+                </div>
+            </div>
+            <div class="current-order" id="current-order-display-vi" style="display:none;">
+                <strong>Đơn hàng hiện tại：</strong><span id="current-order-text-vi"></span>
+            </div>
+        </div>
+        
+        <!-- 操作人员信息区域 -->
+        <div class="operator-info" id="operator-info-zh">
+            <h3>操作人员信息</h3>
+            <div class="order-form">
+                <div class="form-group">
+                    <label for="operator-name">姓名</label>
+                    <input type="text" id="operator-name" placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label for="operator-position">职位</label>
+                    <select id="operator-position">
+                        <option value="">请选择职位</option>
+                        <option value="IPQC">IPQC</option>
+                        <option value="OQC">OQC</option>
+                        <option value="品质组长">品质组长</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button id="save-operator" class="btn-save" style="background-color:#28a745; color:white; height:36px;">
+                        保存操作人员信息
+                    </button>
+                </div>
+            </div>
+            <div class="current-order" id="current-operator-display" style="display:none;">
+                <strong>当前操作人员：</strong><span id="current-operator-text"></span>
+            </div>
+        </div>
+        
+        <div class="operator-info" id="operator-info-vi" style="display:none;">
+            <h3>Thông tin người vận hành</h3>
+            <div class="order-form">
+                <div class="form-group">
+                    <label for="operator-name-vi">Họ tên</label>
+                    <input type="text" id="operator-name-vi" placeholder="Nhập họ tên">
+                </div>
+                <div class="form-group">
+                    <label for="operator-position-vi">Chức vụ</label>
+                    <select id="operator-position-vi">
+                        <option value="">Chọn chức vụ</option>
+                        <option value="IPQC">IPQC</option>
+                        <option value="OQC">OQC</option>
+                        <option value="品质组长">Trưởng nhóm chất lượng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button id="save-operator-vi" class="btn-save" style="background-color:#28a745; color:white; height:36px;">
+                        Lưu thông tin
+                    </button>
+                </div>
+            </div>
+            <div class="current-order" id="current-operator-display-vi" style="display:none;">
+                <strong>Người vận hành hiện tại：</strong><span id="current-operator-text-vi"></span>
+            </div>
+        </div>
+        
+        <!-- 使用说明 -->
+        <div class="instructions" id="instructions-zh">
+            <h3>使用说明</h3>
+            <ul>
+                <li>首次使用请填写订单信息和操作人员信息</li>
+                <li>模板区域：手动输入正确条码作为比对基准</li>
+                <li>扫描区域：只能使用扫描枪扫描</li>
+                <li>卡通箱一维码：启用校验后校验前N位+最后2位（N=7,8,9,10,11）</li>
+                <li>不校验总长度，只校验指定位置字符</li>
+                <li>扫描后自动跳转到下一个区域</li>
+                <li>所有操作都会被记录，可查看操作记录</li>
+            </ul>
+        </div>
+        
+        <div class="instructions" id="instructions-vi" style="display:none;">
+            <h3>Hướng dẫn sử dụng</h3>
+            <ul>
+                <li>Điền thông tin đơn hàng và người vận hành lần đầu sử dụng</li>
+                <li>Khu vực mẫu: Nhập thủ công mã vạch chính xác</li>
+                <li>Khu vực quét: Chỉ sử dụng súng quét</li>
+                <li>Mã vạch 1D thùng carton: Kiểm tra N ký tự đầu + 2 ký tự cuối (N=7,8,9,10,11)</li>
+                <li>Không kiểm tra tổng chiều dài, chỉ kiểm tra ký tự vị trí chỉ định</li>
+                <li>Tự động chuyển khu vực sau khi quét</li>
+                <li>Tất cả thao tác đều được ghi lại, có thể xem lịch sử</li>
+            </ul>
+        </div>
+        
+        <!-- 扫描比对区域 -->
+        <div class="app-container">
+            <!-- 卡通箱一维码比对 -->
+            <div class="scan-section">
+                <div class="section-header">
+                    <div class="section-title" id="barcode-title-1-zh">卡通箱一维码比对</div>
+                    <div class="section-title" id="barcode-title-1-vi" style="display:none;">So sánh mã vạch 1D thùng carton</div>
+                    <div class="section-rule" id="barcode-rule-1-zh">可扫描一维码或二维码</div>
+                    <div class="section-rule" id="barcode-rule-1-vi" style="display:none;">Có thể quét mã vạch 1D hoặc QR</div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="template-label-1-zh" for="barcode-template-1">模板区域 (手动输入)</label>
+                    <label id="template-label-1-vi" style="display:none;" for="barcode-template-1">Khu vực mẫu (Nhập thủ công)</label>
+                    <input type="text" id="barcode-template-1" class="manual" placeholder="请输入模板">
+                </div>
+                
+                <div class="input-group">
+                    <label id="scan-label-1-zh" for="barcode-scan-1">扫描区域 (扫描枪)</label>
+                    <label id="scan-label-1-vi" style="display:none;" for="barcode-scan-1">Khu vực quét (Súng quét)</label>
+                    <input type="text" id="barcode-scan-1" class="scan" placeholder="请使用扫描枪扫描">
+                </div>
+                
+                <!-- 字符校验选项 -->
+                <div class="validation-option" id="barcode-validation-option-zh">
+                    <label for="barcode-validation-toggle">
+                        <input type="checkbox" id="barcode-validation-toggle">
+                        <span>启用字符校验</span>
+                    </label>
+                    <select id="barcode-validation-type">
+                        <option value="7">前7位+最后2位</option>
+                        <option value="8">前8位+最后2位</option>
+                        <option value="9">前9位+最后2位</option>
+                        <option value="10">前10位+最后2位</option>
+                        <option value="11">前11位+最后2位</option>
+                    </select>
+                </div>
+                
+                <div class="validation-option" id="barcode-validation-option-vi" style="display:none;">
+                    <label for="barcode-validation-toggle-vi">
+                        <input type="checkbox" id="barcode-validation-toggle-vi">
+                        <span>Bật kiểm tra ký tự</span>
+                    </label>
+                    <select id="barcode-validation-type-vi">
+                        <option value="7">7 ký tự đầu + 2 ký tự cuối</option>
+                        <option value="8">8 ký tự đầu + 2 ký tự cuối</option>
+                        <option value="9">9 ký tự đầu + 2 ký tự cuối</option>
+                        <option value="10">10 ký tự đầu + 2 ký tự cuối</option>
+                        <option value="11">11 ký tự đầu + 2 ký tự cuối</option>
+                    </select>
+                </div>
+                
+                <div class="extracted-info">
+                    <span id="extracted-label-1-zh">比对内容：</span>
+                    <span id="extracted-label-1-vi" style="display:none;">Nội dung so sánh: </span>
+                    <span id="barcode-extracted-1">等待扫描...</span>
+                </div>
+                
+                <div id="barcode-result-1" class="compare-result">
+                    <span id="waiting-label-1-zh">等待比对</span>
+                    <span id="waiting-label-1-vi" style="display:none;">Chờ so sánh</span>
+                </div>
+            </div>
+            
+            <!-- 卡通箱二维码比对 -->
+            <div class="scan-section">
+                <div class="section-header">
+                    <div class="section-title" id="qrcode-title-1-zh">卡通箱二维码比对</div>
+                    <div class="section-title" id="qrcode-title-1-vi" style="display:none;">So sánh mã QR thùng carton</div>
+                    <div class="section-rule" id="qrcode-rule-1-zh">取前<span id="first-chars-count">8</span>个字符</div>
+                    <div class="section-rule" id="qrcode-rule-1-vi" style="display:none;">Lấy <span id="first-chars-count-vi">8</span> ký tự đầu</div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="template-label-2-zh" for="qrcode-template-1">模板区域 (手动输入)</label>
+                    <label id="template-label-2-vi" style="display:none;" for="qrcode-template-1">Khu vực mẫu (Nhập thủ công)</label>
+                    <input type="text" id="qrcode-template-1" class="manual" placeholder="请输入二维码模板">
+                </div>
+                
+                <div class="input-group">
+                    <label id="scan-label-2-zh" for="qrcode-scan-1">扫描区域 (扫描枪)</label>
+                    <label id="scan-label-2-vi" style="display:none;" for="qrcode-scan-1">Khu vực quét (Súng quét)</label>
+                    <input type="text" id="qrcode-scan-1" class="scan" placeholder="请使用扫描枪扫描">
+                </div>
+                
+                <div class="extracted-info">
+                    <span id="extracted-label-2-zh">提取前<span id="first-chars-display">8</span>位：</span>
+                    <span id="extracted-label-2-vi" style="display:none;">Trích xuất <span id="first-chars-display-vi">8</span> ký tự đầu: </span>
+                    <span id="qrcode-extracted-1">等待扫描...</span>
+                </div>
+                
+                <div id="qrcode-result-1" class="compare-result">
+                    <span id="waiting-label-2-zh">等待比对</span>
+                    <span id="waiting-label-2-vi" style="display:none;">Chờ so sánh</span>
+                </div>
+            </div>
+            
+            <!-- 彩盒一维码比对 -->
+            <div class="scan-section">
+                <div class="section-header">
+                    <div class="section-title" id="barcode-title-2-zh">彩盒一维码比对</div>
+                    <div class="section-title" id="barcode-title-2-vi" style="display:none;">So sánh mã vạch 1D hộp màu</div>
+                    <div class="section-rule" id="barcode-rule-2-zh">全字比对</div>
+                    <div class="section-rule" id="barcode-rule-2-vi" style="display:none;">So sánh toàn bộ</div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="template-label-3-zh" for="barcode-template-2">模板区域 (手动输入)</label>
+                    <label id="template-label-3-vi" style="display:none;" for="barcode-template-2">Khu vực mẫu (Nhập thủ công)</label>
+                    <input type="text" id="barcode-template-2" class="manual" placeholder="请输入模板">
+                </div>
+                
+                <div class="input-group">
+                    <label id="scan-label-3-zh" for="barcode-scan-2">扫描区域 (扫描枪)</label>
+                    <label id="scan-label-3-vi" style="display:none;" for="barcode-scan-2">Khu vực quét (Súng quét)</label>
+                    <input type="text" id="barcode-scan-2" class="scan" placeholder="请使用扫描枪扫描">
+                </div>
+                
+                <div class="extracted-info">
+                    <span id="extracted-label-3-zh">比对内容：</span>
+                    <span id="extracted-label-3-vi" style="display:none;">Nội dung so sánh: </span>
+                    <span id="barcode-extracted-2">等待扫描...</span>
+                </div>
+                
+                <div id="barcode-result-2" class="compare-result">
+                    <span id="waiting-label-3-zh">等待比对</span>
+                    <span id="waiting-label-3-vi" style="display:none;">Chờ so sánh</span>
+                </div>
+            </div>
+            
+            <!-- 彩盒二维码比对 -->
+            <div class="scan-section">
+                <div class="section-header">
+                    <div class="section-title" id="qrcode-title-3-zh">彩盒二维码比对</div>
+                    <div class="section-title" id="qrcode-title-3-vi" style="display:none;">So sánh mã QR hộp màu</div>
+                    <div class="section-rule" id="qrcode-rule-3-zh">取后<span id="last-chars-count-2">6</span>个字符</div>
+                    <div class="section-rule" id="qrcode-rule-3-vi" style="display:none;">Lấy <span id="last-chars-count-2-vi">6</span> ký tự cuối</div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="template-label-4-zh" for="qrcode-template-3">模板区域 (手动输入)</label>
+                    <label id="template-label-4-vi" style="display:none;" for="qrcode-template-3">Khu vực mẫu (Nhập thủ công)</label>
+                    <input type="text" id="qrcode-template-3" class="manual" placeholder="请输入二维码模板">
+                </div>
+                
+                <div class="input-group">
+                    <label id="scan-label-4-zh" for="qrcode-scan-3">扫描区域 (扫描枪)</label>
+                    <label id="scan-label-4-vi" style="display:none;" for="qrcode-scan-3">Khu vực quét (Súng quét)</label>
+                    <input type="text" id="qrcode-scan-3" class="scan" placeholder="请使用扫描枪扫描">
+                </div>
+                
+                <div class="extracted-info">
+                    <span id="extracted-label-4-zh">提取后<span id="last-chars-display-2">6</span>位：</span>
+                    <span id="extracted-label-4-vi" style="display:none;">Trích xuất <span id="last-chars-display-2-vi">6</span> ký tự cuối: </span>
+                    <span id="qrcode-extracted-3">等待扫描...</span>
+                </div>
+                
+                <div id="qrcode-result-3" class="compare-result">
+                    <span id="waiting-label-4-zh">等待比对</span>
+                    <span id="waiting-label-4-vi" style="display:none;">Chờ so sánh</span>
+                </div>
+            </div>
+            
+            <!-- 机身二维码比对 -->
+            <div class="scan-section">
+                <div class="section-header">
+                    <div class="section-title" id="qrcode-title-2-zh">机身二维码比对</div>
+                    <div class="section-title" id="qrcode-title-2-vi" style="display:none;">So sánh mã QR thân máy</div>
+                    <div class="section-rule" id="qrcode-rule-2-zh">取后<span id="last-chars-count">6</span>个字符</div>
+                    <div class="section-rule" id="qrcode-rule-2-vi" style="display:none;">Lấy <span id="last-chars-count-vi">6</span> ký tự cuối</div>
+                </div>
+                
+                <div class="input-group">
+                    <label id="template-label-5-zh" for="qrcode-template-2">模板区域 (手动输入)</label>
+                    <label id="template-label-5-vi" style="display:none;" for="qrcode-template-2">Khu vực mẫu (Nhập thủ công)</label>
+                    <input type="text" id="qrcode-template-2" class="manual" placeholder="请输入二维码模板">
+                </div>
+                
+                <div class="input-group">
+                    <label id="scan-label-5-zh" for="qrcode-scan-2">扫描区域 (扫描枪)</label>
+                    <label id="scan-label-5-vi" style="display:none;" for="qrcode-scan-2">Khu vực quét (Súng quét)</label>
+                    <input type="text" id="qrcode-scan-2" class="scan" placeholder="请使用扫描枪扫描">
+                </div>
+                
+                <div class="extracted-info">
+                    <span id="extracted-label-5-zh">提取后<span id="last-chars-display">6</span>位：</span>
+                    <span id="extracted-label-5-vi" style="display:none;">Trích xuất <span id="last-chars-display-vi">6</span> ký tự cuối: </span>
+                    <span id="qrcode-extracted-2">等待扫描...</span>
+                </div>
+                
+                <div id="qrcode-result-2" class="compare-result">
+                    <span id="waiting-label-5-zh">等待比对</span>
+                    <span id="waiting-label-5-vi" style="display:none;">Chờ so sánh</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="btn-reset" id="reset-all">
+                <span id="reset-label-zh">重置所有扫描区域</span>
+                <span id="reset-label-vi" style="display:none;">Đặt lại tất cả khu vực quét</span>
+            </button>
+            <button class="btn-clear-all" id="clear-all">
+                <span id="clear-label-zh">清除所有输入</span>
+                <span id="clear-label-vi" style="display:none;">Xóa tất cả đầu vào</span>
+            </button>
+            <button class="btn-simulate" id="simulate-scan">
+                <span id="simulate-label-zh">模拟扫描测试</span>
+                <span id="simulate-label-vi" style="display:none;">Kiểm tra quét mô phỏng</span>
+            </button>
+            <button class="btn-settings" id="settings-btn">
+                <span id="settings-label-zh">设置</span>
+                <span id="settings-label-vi" style="display:none;">Cài đặt</span>
+            </button>
+            <button class="btn-records" id="records-btn">
+                <span id="records-label-zh">查看记录</span>
+                <span id="records-label-vi" style="display:none;">Xem lịch sử</span>
+            </button>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p id="footer-text-zh">条码扫描比对工具 | 版本 2.0 | 设计用于生产线质量控制</p>
+            <p id="footer-text-vi" style="display:none;">Công cụ so sánh mã vạch | Phiên bản 2.0 | Thiết kế cho kiểm soát chất lượng dây chuyền sản xuất</p>
+            <p id="footer-hint-zh">提示：扫描枪扫描后光标会自动跳转</p>
+            <p id="footer-hint-vi" style="display:none;">Gợi ý: Con trỏ tự động nhảy sau khi quét bằng súng quét</p>
+        </div>
+    </div>
+    
+    <!-- 设置面板 -->
+    <div class="panel-overlay" id="settings-overlay"></div>
+    <div class="settings-panel" id="settings-panel">
+        <div class="panel-header">
+            <h2 id="settings-title-zh">字符提取设置</h2>
+            <h2 id="settings-title-vi" style="display:none;">Cài đặt trích xuất ký tự</h2>
+            <button class="btn-close-panel" id="close-settings">×</button>
+        </div>
+        
+        <div class="panel-group">
+            <h3 id="qrcode-settings-title-zh">二维码比对设置</h3>
+            <h3 id="qrcode-settings-title-vi" style="display:none;">Cài đặt so sánh mã QR</h3>
+            
+            <div class="panel-item">
+                <label for="first-chars-input" id="first-chars-label-zh">卡通箱二维码 - 前N个字符：</label>
+                <label for="first-chars-input" id="first-chars-label-vi" style="display:none;">Mã QR thùng carton - N ký tự đầu：</label>
+                <input type="number" id="first-chars-input" min="1" max="50" value="8">
+                <div style="font-size:12px; color:#666; margin-top:5px;" id="first-chars-note-zh">从二维码开头提取的字符数量</div>
+                <div style="font-size:12px; color:#666; margin-top:5px; display:none;" id="first-chars-note-vi">Số lượng ký tự được trích xuất từ đầu mã QR</div>
+            </div>
+            
+            <div class="panel-item">
+                <label for="last-chars-input" id="last-chars-label-zh">机身/彩盒二维码 - 后M个字符：</label>
+                <label for="last-chars-input" id="last-chars-label-vi" style="display:none;">Mã QR thân máy/hộp màu - M ký tự cuối：</label>
+                <input type="number" id="last-chars-input" min="1" max="50" value="6">
+                <div style="font-size:12px; color:#666; margin-top:5px;" id="last-chars-note-zh">从二维码末尾提取的字符数量</div>
+                <div style="font-size:12px; color:#666; margin-top:5px; display:none;" id="last-chars-note-vi">Số lượng ký tự được trích xuất từ cuối mã QR</div>
+            </div>
+        </div>
+        
+        <div class="panel-group">
+            <h3 id="validation-settings-title-zh">卡通箱一维码校验设置</h3>
+            <h3 id="validation-settings-title-vi" style="display:none;">Cài đặt kiểm tra mã vạch 1D thùng carton</h3>
+            
+            <div class="panel-item">
+                <label for="barcode-validation-enabled" id="validation-enabled-label-zh">启用字符校验：</label>
+                <label for="barcode-validation-enabled" id="validation-enabled-label-vi" style="display:none;">Bật kiểm tra ký tự：</label>
+                <div>
+                    <input type="checkbox" id="barcode-validation-enabled">
+                    <label for="barcode-validation-enabled" style="display: inline; font-weight: normal;">
+                        <span id="validation-enabled-text-zh">启用字符校验功能</span>
+                        <span id="validation-enabled-text-vi" style="display:none;">Bật chức năng kiểm tra ký tự</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="panel-item">
+                <label for="barcode-validation-rule" id="validation-rule-label-zh">校验规则：</label>
+                <label for="barcode-validation-rule" id="validation-rule-label-vi" style="display:none;">Quy tắc kiểm tra：</label>
+                <select id="barcode-validation-rule">
+                    <option value="7">前7位 + 最后2位</option>
+                    <option value="8">前8位 + 最后2位</option>
+                    <option value="9">前9位 + 最后2位</option>
+                    <option value="10">前10位 + 最后2位</option>
+                    <option value="11">前11位 + 最后2位</option>
+                </select>
+                <div style="font-size:12px; color:#666; margin-top:5px;" id="validation-rule-note-zh">校验前N位和最后2位，不校验总长度</div>
+                <div style="font-size:12px; color:#666; margin-top:5px; display:none;" id="validation-rule-note-vi">Kiểm tra N ký tự đầu và 2 ký tự cuối, không kiểm tra tổng chiều dài</div>
+            </div>
+        </div>
+        
+        <div class="panel-buttons">
+            <button class="btn-save" id="save-settings">
+                <span id="save-label-zh">保存设置</span>
+                <span id="save-label-vi" style="display:none;">Lưu cài đặt</span>
+            </button>
+            <button class="btn-cancel" id="cancel-settings">
+                <span id="cancel-label-zh">取消</span>
+                <span id="cancel-label-vi" style="display:none;">Hủy</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 记录查询面板 -->
+    <div class="panel-overlay" id="records-overlay"></div>
+    <div class="records-panel" id="records-panel">
+        <div class="panel-header">
+            <h2 id="records-title-zh">操作记录查询</h2>
+            <h2 id="records-title-vi" style="display:none;">Truy vấn lịch sử thao tác</h2>
+            <button class="btn-close-panel" id="close-records">×</button>
+        </div>
+        
+        <div class="panel-group">
+            <h3 id="filter-title-zh">筛选条件</h3>
+            <h3 id="filter-title-vi" style="display:none;">Điều kiện lọc</h3>
+            
+            <div class="panel-item">
+                <label for="record-filter-type" id="filter-type-label-zh">记录类型：</label>
+                <label for="record-filter-type" id="filter-type-label-vi" style="display:none;">Loại ghi chép：</label>
+                <select id="record-filter-type">
+                    <option value="all">全部类型</option>
+                    <option value="scan">扫描比对</option>
+                    <option value="success">比对成功</option>
+                    <option value="failure">比对失败</option>
+                    <option value="order">订单信息</option>
+                    <option value="operator">操作人员</option>
+                    <option value="settings">设置更改</option>
+                </select>
+            </div>
+            
+            <div class="panel-item">
+                <label for="record-filter-date" id="filter-date-label-zh">日期范围：</label>
+                <label for="record-filter-date" id="filter-date-label-vi" style="display:none;">Phạm vi ngày：</label>
+                <select id="record-filter-date">
+                    <option value="all">全部时间</option>
+                    <option value="today">今天</option>
+                    <option value="week">本周</option>
+                    <option value="month">本月</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="panel-group">
+            <h3 id="records-list-title-zh">操作记录列表</h3>
+            <h3 id="records-list-title-vi" style="display:none;">Danh sách lịch sử thao tác</h3>
+            
+            <div class="records-list" id="records-list">
+                <div class="no-records" id="no-records-zh">暂无操作记录</div>
+                <div class="no-records" id="no-records-vi" style="display:none;">Chưa có ghi chép thao tác</div>
+            </div>
+            
+            <div class="panel-buttons" style="margin-top:15px;">
+                <button class="btn-cancel" id="export-records">
+                    <span id="export-label-zh">导出记录</span>
+                    <span id="export-label-vi" style="display:none;">Xuất lịch sử</span>
+                </button>
+                <button class="btn-clear-all" id="clear-records">
+                    <span id="clear-records-label-zh">清空记录</span>
+                    <span id="clear-records-label-vi" style="display:none;">Xóa lịch sử</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化变量
+        let currentLang = 'zh';
+        let extractionSettings = {
+            firstChars: 8,
+            lastChars: 6,
+            barcodeValidation: {
+                enabled: false,
+                rule: '7'
+            }
+        };
+        
+        let currentOrder = {
+            orderNumber: '',
+            productModel: '',
+            set: false
+        };
+        
+        let currentOperator = {
+            name: '',
+            position: '',
+            set: false
+        };
+        
+        let operationRecords = [];
+        
+        // 语言切换函数
+        function switchLanguage(lang) {
+            currentLang = lang;
+            
+            // 更新语言标签
+            document.querySelectorAll('.lang-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.lang-tab[data-lang="${lang}"]`).classList.add('active');
+            
+            // 显示/隐藏语言相关元素
+            document.querySelectorAll('[id$="-zh"]').forEach(el => {
+                el.style.display = lang === 'zh' ? '' : 'none';
+            });
+            
+            document.querySelectorAll('[id$="-vi"]').forEach(el => {
+                el.style.display = lang === 'vi' ? '' : 'none';
+            });
+            
+            // 更新校验选项显示
+            updateValidationDisplay();
+            
+            // 更新记录显示
+            if (document.getElementById('records-panel').classList.contains('active')) {
+                displayRecords();
+            }
+        }
+        
+        // 更新校验选项显示
+        function updateValidationDisplay() {
+            const validationOptionZh = document.getElementById('barcode-validation-option-zh');
+            const validationOptionVi = document.getElementById('barcode-validation-option-vi');
+            
+            if (extractionSettings.barcodeValidation.enabled) {
+                if (validationOptionZh) validationOptionZh.style.display = 'flex';
+                if (validationOptionVi) validationOptionVi.style.display = 'flex';
+            } else {
+                if (validationOptionZh) validationOptionZh.style.display = 'none';
+                if (validationOptionVi) validationOptionVi.style.display = 'none';
+            }
+        }
+        
+        // 加载数据
+        function loadData() {
+            try {
+                const savedSettings = localStorage.getItem('extractionSettings');
+                if (savedSettings) {
+                    extractionSettings = JSON.parse(savedSettings);
+                }
+                
+                const savedOrder = localStorage.getItem('currentOrder');
+                if (savedOrder) {
+                    currentOrder = JSON.parse(savedOrder);
+                    updateOrderDisplay();
+                }
+                
+                const savedOperator = localStorage.getItem('currentOperator');
+                if (savedOperator) {
+                    currentOperator = JSON.parse(savedOperator);
+                    updateOperatorDisplay();
+                }
+                
+                const savedRecords = localStorage.getItem('operationRecords');
+                if (savedRecords) {
+                    operationRecords = JSON.parse(savedRecords);
+                }
+            } catch (e) {
+                console.log('加载数据失败，使用默认设置');
+            }
+        }
+        
+        // 保存数据
+        function saveSettings() {
+            localStorage.setItem('extractionSettings', JSON.stringify(extractionSettings));
+        }
+        
+        function saveOrder() {
+            localStorage.setItem('currentOrder', JSON.stringify(currentOrder));
+        }
+        
+        function saveOperator() {
+            localStorage.setItem('currentOperator', JSON.stringify(currentOperator));
+        }
+        
+        function saveRecords() {
+            if (operationRecords.length > 1000) {
+                operationRecords = operationRecords.slice(-1000);
+            }
+            localStorage.setItem('operationRecords', JSON.stringify(operationRecords));
+        }
+        
+        // 更新订单显示
+        function updateOrderDisplay() {
+            if (currentOrder.set) {
+                document.getElementById('order-number').value = currentOrder.orderNumber;
+                document.getElementById('product-model').value = currentOrder.productModel;
+                
+                const display = document.getElementById('current-order-display');
+                const text = document.getElementById('current-order-text');
+                if (display && text) {
+                    display.style.display = 'block';
+                    text.textContent = `${currentOrder.orderNumber} (${currentOrder.productModel})`;
+                }
+            }
+        }
+        
+        // 更新操作人员显示
+        function updateOperatorDisplay() {
+            if (currentOperator.set) {
+                document.getElementById('operator-name').value = currentOperator.name;
+                document.getElementById('operator-position').value = currentOperator.position;
+                
+                const display = document.getElementById('current-operator-display');
+                const text = document.getElementById('current-operator-text');
+                if (display && text) {
+                    display.style.display = 'block';
+                    text.textContent = `${currentOperator.name} (${currentOperator.position})`;
+                }
+            }
+        }
+        
+        // 添加操作记录
+        function addOperationRecord(type, details) {
+            const record = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                orderNumber: currentOrder.orderNumber,
+                productModel: currentOrder.productModel,
+                operatorName: currentOperator.name,
+                operatorPosition: currentOperator.position,
+                type: type,
+                details: details
+            };
+            
+            operationRecords.push(record);
+            saveRecords();
+            
+            // 更新记录显示
+            if (document.getElementById('records-panel').classList.contains('active')) {
+                displayRecords();
+            }
+        }
+        
+        // 执行比对
+        function performComparison(scanInputId) {
+            let templateInput, scanInput, extractedElement, resultElement, compareType, charCount, sectionName;
+            
+            switch(scanInputId) {
+                case 'barcode-scan-1':
+                    templateInput = document.getElementById('barcode-template-1');
+                    scanInput = document.getElementById('barcode-scan-1');
+                    extractedElement = document.getElementById('barcode-extracted-1');
+                    resultElement = document.getElementById('barcode-result-1');
+                    sectionName = currentLang === 'zh' ? '卡通箱一维码比对' : 'So sánh mã vạch 1D thùng carton';
+                    
+                    if (extractionSettings.barcodeValidation.enabled) {
+                        compareType = 'validation';
+                        charCount = parseInt(extractionSettings.barcodeValidation.rule);
+                    } else {
+                        compareType = 'full';
+                    }
+                    break;
+                case 'qrcode-scan-1':
+                    templateInput = document.getElementById('qrcode-template-1');
+                    scanInput = document.getElementById('qrcode-scan-1');
+                    extractedElement = document.getElementById('qrcode-extracted-1');
+                    resultElement = document.getElementById('qrcode-result-1');
+                    compareType = 'firstN';
+                    charCount = extractionSettings.firstChars;
+                    sectionName = currentLang === 'zh' ? '卡通箱二维码比对' : 'So sánh mã QR thùng carton';
+                    break;
+                case 'barcode-scan-2':
+                    templateInput = document.getElementById('barcode-template-2');
+                    scanInput = document.getElementById('barcode-scan-2');
+                    extractedElement = document.getElementById('barcode-extracted-2');
+                    resultElement = document.getElementById('barcode-result-2');
+                    compareType = 'full';
+                    sectionName = currentLang === 'zh' ? '彩盒一维码比对' : 'So sánh mã vạch 1D hộp màu';
+                    break;
+                case 'qrcode-scan-3':
+                    templateInput = document.getElementById('qrcode-template-3');
+                    scanInput = document.getElementById('qrcode-scan-3');
+                    extractedElement = document.getElementById('qrcode-extracted-3');
+                    resultElement = document.getElementById('qrcode-result-3');
+                    compareType = 'lastM';
+                    charCount = extractionSettings.lastChars;
+                    sectionName = currentLang === 'zh' ? '彩盒二维码比对' : 'So sánh mã QR hộp màu';
+                    break;
+                case 'qrcode-scan-2':
+                    templateInput = document.getElementById('qrcode-template-2');
+                    scanInput = document.getElementById('qrcode-scan-2');
+                    extractedElement = document.getElementById('qrcode-extracted-2');
+                    resultElement = document.getElementById('qrcode-result-2');
+                    compareType = 'lastM';
+                    charCount = extractionSettings.lastChars;
+                    sectionName = currentLang === 'zh' ? '机身二维码比对' : 'So sánh mã QR thân máy';
+                    break;
+                default:
+                    return;
+            }
+            
+            const templateValue = templateInput.value.trim();
+            const scanValue = scanInput.value.trim();
+            
+            if (!scanValue) {
+                extractedElement.textContent = currentLang === 'zh' ? '等待扫描...' : 'Đang chờ quét...';
+                resultElement.className = 'compare-result';
+                resultElement.innerHTML = currentLang === 'zh' ? '等待比对' : 'Chờ so sánh';
+                return;
+            }
+            
+            let extractedValue = '';
+            let templateExtracted = '';
+            let validationMessage = '';
+            
+            if (compareType === 'full') {
+                extractedValue = scanValue;
+                templateExtracted = templateValue;
+                validationMessage = '';
+            } else if (compareType === 'firstN') {
+                extractedValue = scanValue.substring(0, charCount);
+                templateExtracted = templateValue.substring(0, charCount);
+                validationMessage = currentLang === 'zh' ? 
+                    `前${charCount}位` : 
+                    `${charCount} ký tự đầu`;
+            } else if (compareType === 'lastM') {
+                extractedValue = scanValue.length >= charCount ? scanValue.substring(scanValue.length - charCount) : scanValue;
+                templateExtracted = templateValue.length >= charCount ? templateValue.substring(templateValue.length - charCount) : templateValue;
+                validationMessage = currentLang === 'zh' ? 
+                    `后${charCount}位` : 
+                    `${charCount} ký tự cuối`;
+            } else if (compareType === 'validation') {
+                // 卡通箱一维码校验模式 - 不校验总长度，只校验前N位+最后2位
+                const frontPart = scanValue.substring(0, charCount);
+                const lastPart = scanValue.length >= 2 ? scanValue.substring(scanValue.length - 2) : scanValue;
+                extractedValue = frontPart + lastPart;
+                
+                const templateFrontPart = templateValue.substring(0, charCount);
+                const templateLastPart = templateValue.length >= 2 ? templateValue.substring(templateValue.length - 2) : templateValue;
+                templateExtracted = templateFrontPart + templateLastPart;
+                
+                validationMessage = currentLang === 'zh' ? 
+                    `前${charCount}位+最后2位` : 
+                    `${charCount} ký tự đầu + 2 ký tự cuối`;
+            }
+            
+            if (validationMessage) {
+                extractedElement.textContent = `${validationMessage}: ${extractedValue || (currentLang === 'zh' ? '无法提取有效字符' : 'Không thể trích xuất ký tự hợp lệ')}`;
+            } else {
+                extractedElement.textContent = extractedValue || (currentLang === 'zh' ? '无法提取有效字符' : 'Không thể trích xuất ký tự hợp lệ');
+            }
+            
+            if (!templateValue) {
+                resultElement.className = 'compare-result show';
+                resultElement.innerHTML = currentLang === 'zh' ? '请先输入模板' : 'Vui lòng nhập mẫu trước';
+                return;
+            }
+            
+            const isMatch = extractedValue === templateExtracted && extractedValue !== '';
+            
+            if (isMatch) {
+                resultElement.className = 'compare-result show success';
+                resultElement.innerHTML = currentLang === 'zh' ? '比对成功！' : 'So sánh thành công!';
+                
+                addOperationRecord('success', {
+                    section: sectionName,
+                    scanned: scanValue,
+                    extracted: extractedValue,
+                    result: '成功',
+                    validation: compareType === 'validation' ? `前${charCount}位+最后2位` : ''
+                });
+            } else {
+                resultElement.className = 'compare-result show failure';
+                resultElement.innerHTML = currentLang === 'zh' ? '比对失败！' : 'So sánh thất bại!';
+                
+                addOperationRecord('failure', {
+                    section: sectionName,
+                    scanned: scanValue,
+                    extracted: extractedValue,
+                    result: '失败',
+                    validation: compareType === 'validation' ? `前${charCount}位+最后2位` : ''
+                });
+            }
+            
+            addOperationRecord('scan', {
+                section: sectionName,
+                scanned: scanValue,
+                validation: compareType === 'validation' ? `前${charCount}位+最后2位` : ''
+            });
+        }
+        
+        // 显示记录
+        function displayRecords() {
+            const recordsList = document.getElementById('records-list');
+            const filterType = document.getElementById('record-filter-type').value;
+            const filterDate = document.getElementById('record-filter-date').value;
+            
+            let filteredRecords = operationRecords;
+            
+            // 类型筛选
+            if (filterType !== 'all') {
+                filteredRecords = operationRecords.filter(record => record.type === filterType);
+            }
+            
+            // 日期筛选
+            if (filterDate !== 'all') {
+                const now = new Date();
+                filteredRecords = filteredRecords.filter(record => {
+                    const recordDate = new Date(record.timestamp);
+                    
+                    switch(filterDate) {
+                        case 'today':
+                            return recordDate.toDateString() === now.toDateString();
+                        case 'week':
+                            const weekStart = new Date(now);
+                            weekStart.setDate(now.getDate() - now.getDay());
+                            weekStart.setHours(0, 0, 0, 0);
+                            return recordDate >= weekStart;
+                        case 'month':
+                            return recordDate.getMonth() === now.getMonth() && 
+                                   recordDate.getFullYear() === now.getFullYear();
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // 按时间倒序排序
+            filteredRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            recordsList.innerHTML = '';
+            
+            if (filteredRecords.length === 0) {
+                const noRecords = currentLang === 'zh' ? 
+                    document.getElementById('no-records-zh') : 
+                    document.getElementById('no-records-vi');
+                recordsList.appendChild(noRecords.cloneNode(true));
+                return;
+            }
+            
+            filteredRecords.forEach(record => {
+                const recordItem = document.createElement('div');
+                recordItem.className = 'record-item';
+                
+                const time = new Date(record.timestamp).toLocaleString('zh-CN');
+                let typeText = '';
+                let details = '';
+                
+                switch(record.type) {
+                    case 'scan':
+                        typeText = currentLang === 'zh' ? '扫描比对' : 'Quét so sánh';
+                        details = `${currentLang === 'zh' ? '区域' : 'Khu vực'}: ${record.details.section} | ${currentLang === 'zh' ? '扫描' : 'Quét'}: ${record.details.scanned}`;
+                        if (record.details.validation) {
+                            details += ` | ${currentLang === 'zh' ? '校验规则' : 'Quy tắc kiểm tra'}: ${record.details.validation}`;
+                        }
+                        break;
+                    case 'success':
+                        typeText = currentLang === 'zh' ? '比对成功' : 'So sánh thành công';
+                        details = `${currentLang === 'zh' ? '区域' : 'Khu vực'}: ${record.details.section} | ${currentLang === 'zh' ? '提取' : 'Trích xuất'}: ${record.details.extracted}`;
+                        if (record.details.validation) {
+                            details += ` | ${currentLang === 'zh' ? '校验规则' : 'Quy tắc kiểm tra'}: ${record.details.validation}`;
+                        }
+                        break;
+                    case 'failure':
+                        typeText = currentLang === 'zh' ? '比对失败' : 'So sánh thất bại';
+                        details = `${currentLang === 'zh' ? '区域' : 'Khu vực'}: ${record.details.section} | ${currentLang === 'zh' ? '提取' : 'Trích xuất'}: ${record.details.extracted}`;
+                        if (record.details.validation) {
+                            details += ` | ${currentLang === 'zh' ? '校验规则' : 'Quy tắc kiểm tra'}: ${record.details.validation}`;
+                        }
+                        break;
+                    case 'order':
+                        typeText = currentLang === 'zh' ? '订单信息' : 'Thông tin đơn hàng';
+                        details = `${currentLang === 'zh' ? '订单号' : 'Số đơn hàng'}: ${record.details.orderNumber} | ${currentLang === 'zh' ? '产品型号' : 'Model sản phẩm'}: ${record.details.productModel}`;
+                        break;
+                    case 'operator':
+                        typeText = currentLang === 'zh' ? '操作人员' : 'Người vận hành';
+                        details = `${currentLang === 'zh' ? '姓名' : 'Họ tên'}: ${record.details.name} | ${currentLang === 'zh' ? '职位' : 'Chức vụ'}: ${record.details.position}`;
+                        break;
+                    case 'settings':
+                        typeText = currentLang === 'zh' ? '设置更改' : 'Thay đổi cài đặt';
+                        details = record.details.action;
+                        break;
+                }
+                
+                recordItem.innerHTML = `
+                    <div style="color:#666; margin-bottom:3px;">${time}</div>
+                    <div style="font-weight:600; color:#333; margin-bottom:3px;">${typeText}</div>
+                    <div style="color:#555; margin-bottom:3px;">
+                        ${record.orderNumber ? `${currentLang === 'zh' ? '订单' : 'Đơn hàng'}: ${record.orderNumber} | ` : ''}
+                        ${record.operatorName ? `${currentLang === 'zh' ? '操作员' : 'Người vận hành'}: ${record.operatorName}` : ''}
+                    </div>
+                    <div style="color:#777;">${details}</div>
+                `;
+                
+                recordsList.appendChild(recordItem);
+            });
+        }
+        
+        // 导出记录
+        function exportRecords() {
+            if (operationRecords.length === 0) {
+                alert(currentLang === 'zh' ? '没有可导出的记录' : 'Không có ghi chép nào để xuất');
+                return;
+            }
+            
+            try {
+                let csvContent = "时间,订单号,产品型号,操作人员,职位,类型,详情\n";
+                
+                operationRecords.forEach(record => {
+                    const time = new Date(record.timestamp).toLocaleString('zh-CN');
+                    let details = '';
+                    
+                    if (record.details) {
+                        if (record.type === 'scan' || record.type === 'success' || record.type === 'failure') {
+                            details = `区域：${record.details.section} | 扫描：${record.details.scanned} | 提取：${record.details.extracted} | 结果：${record.details.result}`;
+                            if (record.details.validation) {
+                                details += ` | 校验规则：${record.details.validation}`;
+                            }
+                        } else if (record.type === 'order') {
+                            details = `订单号：${record.details.orderNumber} | 产品型号：${record.details.productModel}`;
+                        } else if (record.type === 'operator') {
+                            details = `姓名：${record.details.name} | 职位：${record.details.position}`;
+                        } else if (record.type === 'settings') {
+                            details = `操作：${record.details.action}`;
+                        }
+                    }
+                    
+                    csvContent += `"${time}","${record.orderNumber || ''}","${record.productModel || ''}","${record.operatorName || ''}","${record.operatorPosition || ''}","${record.type}","${details}"\n`;
+                });
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `操作记录_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert(currentLang === 'zh' ? '记录已导出为CSV文件' : 'Đã xuất ghi chép thành file CSV');
+            } catch (error) {
+                console.error("导出记录时出错:", error);
+                alert(currentLang === 'zh' ? '导出记录失败' : 'Xuất ghi chép thất bại');
+            }
+        }
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 语言切换
+            document.querySelectorAll('.lang-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    switchLanguage(lang);
+                });
+            });
+            
+            // 保存订单信息 - 中文版
+            document.getElementById('save-order').addEventListener('click', function() {
+                const orderNumber = document.getElementById('order-number').value.trim();
+                const productModel = document.getElementById('product-model').value.trim();
+                
+                if (!orderNumber) {
+                    alert(currentLang === 'zh' ? '请输入订单号' : 'Vui lòng nhập số đơn hàng');
+                    return;
+                }
+                
+                currentOrder = {
+                    orderNumber: orderNumber,
+                    productModel: productModel,
+                    set: true
+                };
+                
+                saveOrder();
+                updateOrderDisplay();
+                
+                addOperationRecord('order', {
+                    action: '设置订单信息',
+                    orderNumber: orderNumber,
+                    productModel: productModel
+                });
+                
+                alert(currentLang === 'zh' ? '订单信息已保存' : 'Đã lưu thông tin đơn hàng');
+            });
+            
+            // 保存订单信息 - 越南语版
+            document.getElementById('save-order-vi').addEventListener('click', function() {
+                const orderNumber = document.getElementById('order-number-vi').value.trim();
+                const productModel = document.getElementById('product-model-vi').value.trim();
+                
+                if (!orderNumber) {
+                    alert(currentLang === 'zh' ? '请输入订单号' : 'Vui lòng nhập số đơn hàng');
+                    return;
+                }
+                
+                currentOrder = {
+                    orderNumber: orderNumber,
+                    productModel: productModel,
+                    set: true
+                };
+                
+                saveOrder();
+                updateOrderDisplay();
+                
+                addOperationRecord('order', {
+                    action: '设置订单信息',
+                    orderNumber: orderNumber,
+                    productModel: productModel
+                });
+                
+                alert(currentLang === 'zh' ? '订单信息已保存' : 'Đã lưu thông tin đơn hàng');
+            });
+            
+            // 保存操作人员 - 中文版
+            document.getElementById('save-operator').addEventListener('click', function() {
+                const name = document.getElementById('operator-name').value.trim();
+                const position = document.getElementById('operator-position').value;
+                
+                if (!name || !position) {
+                    alert(currentLang === 'zh' ? '请输入姓名和选择职位' : 'Vui lòng nhập họ tên và chọn chức vụ');
+                    return;
+                }
+                
+                currentOperator = {
+                    name: name,
+                    position: position,
+                    set: true
+                };
+                
+                saveOperator();
+                updateOperatorDisplay();
+                
+                addOperationRecord('operator', {
+                    action: '设置操作人员',
+                    name: name,
+                    position: position
+                });
+                
+                alert(currentLang === 'zh' ? '操作人员信息已保存' : 'Đã lưu thông tin người vận hành');
+            });
+            
+            // 保存操作人员 - 越南语版
+            document.getElementById('save-operator-vi').addEventListener('click', function() {
+                const name = document.getElementById('operator-name-vi').value.trim();
+                const position = document.getElementById('operator-position-vi').value;
+                
+                if (!name || !position) {
+                    alert(currentLang === 'zh' ? '请输入姓名和选择职位' : 'Vui lòng nhập họ tên và chọn chức vụ');
+                    return;
+                }
+                
+                currentOperator = {
+                    name: name,
+                    position: position,
+                    set: true
+                };
+                
+                saveOperator();
+                updateOperatorDisplay();
+                
+                addOperationRecord('operator', {
+                    action: '设置操作人员',
+                    name: name,
+                    position: position
+                });
+                
+                alert(currentLang === 'zh' ? '操作人员信息已保存' : 'Đã lưu thông tin người vận hành');
+            });
+            
+            // 扫描输入事件
+            const scanInputs = [
+                'barcode-scan-1', 'qrcode-scan-1', 'barcode-scan-2', 'qrcode-scan-3', 'qrcode-scan-2'
+            ];
+            
+            scanInputs.forEach((id, index) => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        setTimeout(() => {
+                            performComparison(this.id);
+                            
+                            if (this.value.trim().length > 0 && index < scanInputs.length - 1) {
+                                const nextInput = document.getElementById(scanInputs[index + 1]);
+                                if (nextInput) {
+                                    setTimeout(() => nextInput.focus(), 100);
+                                }
+                            }
+                        }, 300);
+                    });
+                }
+            });
+            
+            // 校验功能 - 中文版
+            const validationToggle = document.getElementById('barcode-validation-toggle');
+            const validationType = document.getElementById('barcode-validation-type');
+            
+            if (validationToggle) {
+                validationToggle.checked = extractionSettings.barcodeValidation.enabled;
+                validationToggle.addEventListener('change', function() {
+                    extractionSettings.barcodeValidation.enabled = this.checked;
+                    saveSettings();
+                    updateValidationDisplay();
+                    
+                    if (document.getElementById('barcode-scan-1').value.trim().length > 0) {
+                        performComparison('barcode-scan-1');
+                    }
+                    
+                    addOperationRecord('settings', {
+                        action: '卡通箱一维码校验设置',
+                        enabled: this.checked,
+                        rule: extractionSettings.barcodeValidation.rule
+                    });
+                });
+            }
+            
+            if (validationType) {
+                validationType.value = extractionSettings.barcodeValidation.rule;
+                validationType.addEventListener('change', function() {
+                    extractionSettings.barcodeValidation.rule = this.value;
+                    saveSettings();
+                    
+                    if (document.getElementById('barcode-scan-1').value.trim().length > 0) {
+                        performComparison('barcode-scan-1');
+                    }
+                    
+                    addOperationRecord('settings', {
+                        action: '卡通箱一维码校验规则更改',
+                        enabled: extractionSettings.barcodeValidation.enabled,
+                        rule: this.value
+                    });
+                });
+            }
+            
+            // 校验功能 - 越南语版
+            const validationToggleVi = document.getElementById('barcode-validation-toggle-vi');
+            const validationTypeVi = document.getElementById('barcode-validation-type-vi');
+            
+            if (validationToggleVi) {
+                validationToggleVi.checked = extractionSettings.barcodeValidation.enabled;
+                validationToggleVi.addEventListener('change', function() {
+                    extractionSettings.barcodeValidation.enabled = this.checked;
+                    saveSettings();
+                    updateValidationDisplay();
+                    
+                    if (document.getElementById('barcode-scan-1').value.trim().length > 0) {
+                        performComparison('barcode-scan-1');
+                    }
+                    
+                    addOperationRecord('settings', {
+                        action: '卡通箱一维码校验设置',
+                        enabled: this.checked,
+                        rule: extractionSettings.barcodeValidation.rule
+                    });
+                });
+            }
+            
+            if (validationTypeVi) {
+                validationTypeVi.value = extractionSettings.barcodeValidation.rule;
+                validationTypeVi.addEventListener('change', function() {
+                    extractionSettings.barcodeValidation.rule = this.value;
+                    saveSettings();
+                    
+                    if (document.getElementById('barcode-scan-1').value.trim().length > 0) {
+                        performComparison('barcode-scan-1');
+                    }
+                    
+                    addOperationRecord('settings', {
+                        action: '卡通箱一维码校验规则更改',
+                        enabled: extractionSettings.barcodeValidation.enabled,
+                        rule: this.value
+                    });
+                });
+            }
+            
+            // 面板控制
+            document.getElementById('settings-btn').addEventListener('click', function() {
+                document.getElementById('settings-panel').classList.add('active');
+                document.getElementById('settings-overlay').classList.add('active');
+                
+                document.getElementById('first-chars-input').value = extractionSettings.firstChars;
+                document.getElementById('last-chars-input').value = extractionSettings.lastChars;
+                document.getElementById('barcode-validation-enabled').checked = extractionSettings.barcodeValidation.enabled;
+                document.getElementById('barcode-validation-rule').value = extractionSettings.barcodeValidation.rule;
+            });
+            
+            document.getElementById('records-btn').addEventListener('click', function() {
+                document.getElementById('records-panel').classList.add('active');
+                document.getElementById('records-overlay').classList.add('active');
+                displayRecords();
+            });
+            
+            document.getElementById('close-settings').addEventListener('click', function() {
+                document.getElementById('settings-panel').classList.remove('active');
+                document.getElementById('settings-overlay').classList.remove('active');
+            });
+            
+            document.getElementById('close-records').addEventListener('click', function() {
+                document.getElementById('records-panel').classList.remove('active');
+                document.getElementById('records-overlay').classList.remove('active');
+            });
+            
+            document.getElementById('cancel-settings').addEventListener('click', function() {
+                document.getElementById('settings-panel').classList.remove('active');
+                document.getElementById('settings-overlay').classList.remove('active');
+            });
+            
+            document.getElementById('settings-overlay').addEventListener('click', function() {
+                document.getElementById('settings-panel').classList.remove('active');
+                this.classList.remove('active');
+            });
+            
+            document.getElementById('records-overlay').addEventListener('click', function() {
+                document.getElementById('records-panel').classList.remove('active');
+                this.classList.remove('active');
+            });
+            
+            // 保存设置
+            document.getElementById('save-settings').addEventListener('click', function() {
+                const firstChars = parseInt(document.getElementById('first-chars-input').value);
+                const lastChars = parseInt(document.getElementById('last-chars-input').value);
+                const validationEnabled = document.getElementById('barcode-validation-enabled').checked;
+                const validationRule = document.getElementById('barcode-validation-rule').value;
+                
+                if (isNaN(firstChars) || firstChars < 1 || firstChars > 50) {
+                    alert(currentLang === 'zh' ? '前N个字符必须是1-50之间的数字' : 'N ký tự đầu tiên phải là số từ 1 đến 50');
+                    return;
+                }
+                
+                if (isNaN(lastChars) || lastChars < 1 || lastChars > 50) {
+                    alert(currentLang === 'zh' ? '后M个字符必须是1-50之间的数字' : 'M ký tự cuối cùng phải là số từ 1 đến 50');
+                    return;
+                }
+                
+                extractionSettings.firstChars = firstChars;
+                extractionSettings.lastChars = lastChars;
+                extractionSettings.barcodeValidation.enabled = validationEnabled;
+                extractionSettings.barcodeValidation.rule = validationRule;
+                
+                saveSettings();
+                
+                // 更新界面显示
+                document.getElementById('first-chars-count').textContent = firstChars;
+                document.getElementById('first-chars-count-vi').textContent = firstChars;
+                document.getElementById('first-chars-display').textContent = firstChars;
+                document.getElementById('first-chars-display-vi').textContent = firstChars;
+                document.getElementById('last-chars-count').textContent = lastChars;
+                document.getElementById('last-chars-count-vi').textContent = lastChars;
+                document.getElementById('last-chars-display').textContent = lastChars;
+                document.getElementById('last-chars-display-vi').textContent = lastChars;
+                document.getElementById('last-chars-count-2').textContent = lastChars;
+                document.getElementById('last-chars-count-2-vi').textContent = lastChars;
+                document.getElementById('last-chars-display-2').textContent = lastChars;
+                document.getElementById('last-chars-display-2-vi').textContent = lastChars;
+                
+                if (validationToggle) {
+                    validationToggle.checked = validationEnabled;
+                }
+                if (validationToggleVi) {
+                    validationToggleVi.checked = validationEnabled;
+                }
+                if (validationType) {
+                    validationType.value = validationRule;
+                }
+                if (validationTypeVi) {
+                    validationTypeVi.value = validationRule;
+                }
+                
+                updateValidationDisplay();
+                
+                document.getElementById('settings-panel').classList.remove('active');
+                document.getElementById('settings-overlay').classList.remove('active');
+                
+                addOperationRecord('settings', {
+                    action: '更改所有字符提取设置',
+                    firstChars: firstChars,
+                    lastChars: lastChars,
+                    validationEnabled: validationEnabled,
+                    validationRule: validationRule
+                });
+                
+                alert(currentLang === 'zh' ? '设置已保存' : 'Đã lưu cài đặt');
+            });
+            
+            // 重置按钮
+            document.getElementById('reset-all').addEventListener('click', function() {
+                const scanInputs = [
+                    'barcode-scan-1', 'qrcode-scan-1', 'barcode-scan-2', 'qrcode-scan-3', 'qrcode-scan-2'
+                ];
+                
+                scanInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.value = '';
+                        const event = new Event('input');
+                        input.dispatchEvent(event);
+                    }
+                });
+                
+                addOperationRecord('settings', {
+                    action: '重置所有扫描区域'
+                });
+                
+                alert(currentLang === 'zh' ? '所有扫描区域已重置' : 'Đã đặt lại tất cả khu vực quét');
+            });
+            
+            // 清除按钮
+            document.getElementById('clear-all').addEventListener('click', function() {
+                const inputs = [
+                    'barcode-template-1', 'barcode-scan-1',
+                    'qrcode-template-1', 'qrcode-scan-1',
+                    'barcode-template-2', 'barcode-scan-2',
+                    'qrcode-template-3', 'qrcode-scan-3',
+                    'qrcode-template-2', 'qrcode-scan-2'
+                ];
+                
+                inputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.value = '';
+                    }
+                });
+                
+                const scanInputs = [
+                    'barcode-scan-1', 'qrcode-scan-1', 'barcode-scan-2', 'qrcode-scan-3', 'qrcode-scan-2'
+                ];
+                
+                scanInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        const event = new Event('input');
+                        input.dispatchEvent(event);
+                    }
+                });
+                
+                addOperationRecord('settings', {
+                    action: '清除所有输入'
+                });
+                
+                alert(currentLang === 'zh' ? '所有输入已清除' : 'Đã xóa tất cả đầu vào');
+            });
+            
+            // 模拟测试
+            document.getElementById('simulate-scan').addEventListener('click', function() {
+                const testBarcode1 = '123456789012345678901';
+                const testBarcode2 = '987654321098';
+                const testQrcode = 'ABC123XYZ456DEF789GHI012JKL345MNO678';
+                
+                document.getElementById('barcode-template-1').value = testBarcode1;
+                document.getElementById('qrcode-template-1').value = testQrcode;
+                document.getElementById('barcode-template-2').value = testBarcode2;
+                document.getElementById('qrcode-template-3').value = testQrcode;
+                document.getElementById('qrcode-template-2').value = testQrcode;
+                
+                // 模拟扫描第一个输入框
+                simulateScanInput('barcode-scan-1', testBarcode1);
+                
+                setTimeout(() => {
+                    if (!document.getElementById('qrcode-scan-1').value) {
+                        simulateScanInput('qrcode-scan-1', testQrcode);
+                    }
+                }, 500);
+                
+                setTimeout(() => {
+                    if (!document.getElementById('barcode-scan-2').value) {
+                        simulateScanInput('barcode-scan-2', testBarcode2);
+                    }
+                }, 1000);
+                
+                setTimeout(() => {
+                    if (!document.getElementById('qrcode-scan-3').value) {
+                        simulateScanInput('qrcode-scan-3', testQrcode);
+                    }
+                }, 1500);
+                
+                setTimeout(() => {
+                    if (!document.getElementById('qrcode-scan-2').value) {
+                        simulateScanInput('qrcode-scan-2', testQrcode);
+                    }
+                }, 2000);
+                
+                addOperationRecord('settings', {
+                    action: '执行模拟扫描测试'
+                });
+                
+                alert(currentLang === 'zh' ? '模拟扫描测试已开始' : 'Đã bắt đầu kiểm tra quét mô phỏng');
+            });
+            
+            function simulateScanInput(inputId, value) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                
+                input.value = value;
+                const event = new Event('input');
+                input.dispatchEvent(event);
+            }
+            
+            // 导出记录
+            document.getElementById('export-records').addEventListener('click', exportRecords);
+            
+            // 清空记录
+            document.getElementById('clear-records').addEventListener('click', function() {
+                if (operationRecords.length === 0) {
+                    alert(currentLang === 'zh' ? '没有可清空的记录' : 'Không có ghi chép nào để xóa');
+                    return;
+                }
+                
+                if (confirm(currentLang === 'zh' ? '确定要清空所有操作记录吗？此操作不可恢复。' : 'Bạn có chắc chắn muốn xóa tất cả ghi chép thao tác không? Thao tác này không thể khôi phục.')) {
+                    operationRecords = [];
+                    saveRecords();
+                    displayRecords();
+                    alert(currentLang === 'zh' ? '所有操作记录已清空' : 'Đã xóa tất cả ghi chép thao tác');
+                }
+            });
+            
+            // 记录筛选
+            document.getElementById('record-filter-type').addEventListener('change', displayRecords);
+            document.getElementById('record-filter-date').addEventListener('change', displayRecords);
+        }
+        
+        // 初始化
+        window.onload = function() {
+            loadData();
+            initEventListeners();
+            
+            // 更新校验选项显示
+            updateValidationDisplay();
+            
+            // 更新字符数量显示
+            document.getElementById('first-chars-count').textContent = extractionSettings.firstChars;
+            document.getElementById('first-chars-count-vi').textContent = extractionSettings.firstChars;
+            document.getElementById('first-chars-display').textContent = extractionSettings.firstChars;
+            document.getElementById('first-chars-display-vi').textContent = extractionSettings.firstChars;
+            document.getElementById('last-chars-count').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-count-vi').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-display').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-display-vi').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-count-2').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-count-2-vi').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-display-2').textContent = extractionSettings.lastChars;
+            document.getElementById('last-chars-display-2-vi').textContent = extractionSettings.lastChars;
+            
+            // 自动聚焦到第一个扫描输入框
+            setTimeout(() => {
+                const firstInput = document.getElementById('barcode-scan-1');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }, 100);
+            
+            console.log('条码扫描比对工具已初始化 - 版本 2.0');
+        };
+    </script>
+</body>
+</html>
